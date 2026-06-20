@@ -1,0 +1,46 @@
+# Virtual environment
+Backend/venv/
+venv/
+.venv/
+env/
+.env/
+
+# Node modules & frontend build
+Frontend/node_modules/
+node_modules/
+Frontend/dist/
+dist/
+dist-ssr/
+
+# Environment files
+Backend/.env
+.env
+.env.local
+.env.*.local
+
+# Python caches and compiled files
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Databases
+Backend/db.sqlite3
+db.sqlite3
+
+# Media and logs
+Backend/media/
+media/
+*.log
+Backend/*.log
+Frontend/*.log
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
