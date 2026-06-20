@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://ai-mock-interview-s5ou.onrender.com",
+  baseURL: "https://ai-mock-interview-s5ou.onrender.com/api",
 });
 
 api.interceptors.request.use(
@@ -47,7 +47,7 @@ api.interceptors.response.use(
 
         const response =
           await axios.post(
-            "http://127.0.0.1:8000/api/token/refresh/",
+            "https://ai-mock-interview-s5ou.onrender.com/api/token/refresh/",
             {
               refresh: refreshToken,
             }
