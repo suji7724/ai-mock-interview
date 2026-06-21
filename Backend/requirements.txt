@@ -13,3 +13,6 @@ openai==2.38.0
 Pillow==12.2.0
 PyMuPDF==1.27.2.3
 requests==2.34.2
+
+dj-database-url==2.1.0
+psycopg2-binary==2.9.9
