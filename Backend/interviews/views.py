@@ -95,19 +95,15 @@ class QuestionListView(APIView):
             fallback_pool = FALLBACK_HR_QUESTIONS if interview_type == "HR Round" else FALLBACK_TECHNICAL_QUESTIONS
             needed = db_target_count - len(db_questions)
             sampled_fallbacks = random.sample(fallback_pool, min(needed, len(fallback_pool)))
-            temp_id = 10000
             for q_text in sampled_fallbacks:
-                db_questions.append(
-                    Question(
-                        id=temp_id,
-                        question_text=q_text,
-                        category="General",
-                        difficulty="Medium",
-                        interview_type=interview_type,
-                        is_ai_generated=False
-                    )
+                question, created = Question.objects.get_or_create(
+                    question_text=q_text,
+                    category="General",
+                    difficulty="Medium",
+                    interview_type=interview_type,
+                    is_ai_generated=False
                 )
-                temp_id += 1
+                db_questions.append(question)
         else:
             db_questions = db_questions[:db_target_count]
 
