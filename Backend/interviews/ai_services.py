@@ -24,7 +24,8 @@ if openrouter_key:
 
 def generate_resume_questions(
     role,
-    resume_text
+    resume_text,
+    count=7
 ):
 
     prompt = f"""
@@ -36,7 +37,7 @@ Candidate Role:
 Candidate Resume:
 {resume_text}
 
-Generate exactly 3 interview questions based on:
+Generate exactly {count} high-quality, customized interview questions based on:
 
 - Projects
 - Skills
@@ -47,7 +48,7 @@ Rules:
 - Ask personalized questions.
 - Questions should be relevant to the role.
 - Return ONLY the questions.
-- One question per line.
+- One question per line (do not prefix with numbers or bullet points).
 """
 
     try:
