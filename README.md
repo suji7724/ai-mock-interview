@@ -6,9 +6,9 @@ An AI-powered mock interview platform that helps students, job seekers, and prof
 
 ## 🚀 Live Demo
 
-**Frontend:** https://your-vercel-url.vercel.app
+**Frontend:** https://ai-mock-interview-alpha-cyan.vercel.app/
 
-**Backend API:** https://your-render-url.onrender.com
+**Backend API:** https://ai-mock-interview-s5ou.onrender.com/
 
 ---
 
@@ -16,6 +16,12 @@ An AI-powered mock interview platform that helps students, job seekers, and prof
 
 The AI Mock Interview Platform simulates real interview experiences by generating role-specific interview questions, analyzing resumes, evaluating responses, and providing AI-driven feedback.
 <img width="1366" height="768" alt="2026-06-21 (3)" src="https://github.com/user-attachments/assets/152f6ff3-4ba2-4e8c-a251-93a5aa06d9bc" />
+<img width="1366" height="768" alt="2026-06-21 (2)" src="https://github.com/user-attachments/assets/fa3b10bd-90d1-4359-a66f-dc5cf82240e8" />
+<img width="1366" height="768" alt="2026-06-21 (1)" src="https://github.com/user-attachments/assets/44fa0d00-f56a-4804-a377-79dcc5d87608" />
+<img width="1366" height="768" alt="2026-06-21 (5)" src="https://github.com/user-attachments/assets/85490d3e-91e9-4fdc-888e-6262bdac3c60" />
+
+
+
 
 The platform helps users:
 
@@ -248,9 +254,9 @@ This project demonstrates:
 
 Sujit Shah
 
-LinkedIn: [Add Your LinkedIn]
+LinkedIn: https://www.linkedin.com/in/sujitshah-dev/
 
-GitHub: [Add Your GitHub Profile]
+GitHub: https://github.com/suji7724
 
 ---
 
