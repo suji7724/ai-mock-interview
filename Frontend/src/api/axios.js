@@ -1,19 +1,19 @@
 import axios from "axios";
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://ai-mock-interview-s5ou.onrender.com/api";
+
 const api = axios.create({
-  baseURL: "https://ai-mock-interview-s5ou.onrender.com/api",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use(
   (config) => {
-
     const token =
       localStorage.getItem(
         "accessToken"
       );
 
     if (token) {
-
       config.headers.Authorization =
         `Bearer ${token}`;
     }
@@ -23,11 +23,9 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-
   (response) => response,
 
   async (error) => {
-
     const originalRequest =
       error.config;
 
@@ -35,11 +33,9 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry
     ) {
-
       originalRequest._retry = true;
 
       try {
-
         const refreshToken =
           localStorage.getItem(
             "refreshToken"
@@ -47,7 +43,7 @@ api.interceptors.response.use(
 
         const response =
           await axios.post(
-            "https://ai-mock-interview-s5ou.onrender.com/api/token/refresh/",
+            `${API_BASE_URL}/token/refresh/`,
             {
               refresh: refreshToken,
             }
@@ -69,7 +65,6 @@ api.interceptors.response.use(
         );
 
       } catch {
-
         localStorage.clear();
 
         window.location.href =

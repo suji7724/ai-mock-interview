@@ -127,13 +127,25 @@ def submit_assessment(request):
 
     score = 0
     total = questions.count()
+    details = []
 
     for question in questions:
         user_answer = answers.get(str(question.id))
-        if user_answer == question.correct_answer:
+        is_correct = (user_answer == question.correct_answer)
+        if is_correct:
             score += 1
+
+        details.append({
+            "id": question.id,
+            "question": question.question,
+            "options": question.options,
+            "user_answer": user_answer if user_answer else "Not Answered",
+            "correct_answer": question.correct_answer,
+            "category": question.category,
+            "is_correct": is_correct,
+        })
         
-    percentage = (score / total) * 100 if total > 0 else 0
+    percentage = round((score / total) * 100, 2) if total > 0 else 0
 
     # Save Result
     AssessmentResult.objects.create(
@@ -146,7 +158,8 @@ def submit_assessment(request):
     return Response({
         "score": score,
         "total": total,
-        "percentage": percentage
+        "percentage": percentage,
+        "details": details
     })
 
 
