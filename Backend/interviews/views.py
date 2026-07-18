@@ -61,6 +61,7 @@ class InterviewCreateView(generics.CreateAPIView):
             if interview.interview_type == "Assessment Round":
                 from assessments.ai_service import generate_assessment_questions
                 from assessments.models import Question as MCQQuestion
+                MCQQuestion.objects.filter(interview=interview).delete()
                 mcq_data = generate_assessment_questions()
                 for item in mcq_data:
                     q_text = item.get("question", "")

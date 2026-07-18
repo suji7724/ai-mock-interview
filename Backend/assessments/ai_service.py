@@ -368,8 +368,9 @@ def generate_assessment_questions(role=None, resume_text=None):
     Rules for each MCQ:
     1. Each question must have exactly 4 choices (options).
     2. Exactly one option must be the correct answer.
-    3. Return ONLY a valid JSON array matching the schema below.
-    4. Do not include markdown formatting (such as ```json), introduction, or conversational text. Return raw JSON array only.
+    3. Do NOT include resume-based, project-specific, or candidate-specific questions.
+    4. Return ONLY a valid JSON array matching the schema below.
+    5. Do not include markdown formatting (such as ```json), introduction, or conversational text. Return raw JSON array only.
 
     Schema:
     [
@@ -385,7 +386,6 @@ def generate_assessment_questions(role=None, resume_text=None):
     """
 
     response_text = None
-    last_exception = None
 
     # 1. Try Gemini
     if gemini_client:
@@ -401,7 +401,6 @@ def generate_assessment_questions(role=None, resume_text=None):
             print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
             print("Gemini MCQ Generation failed, trying OpenRouter. Error:", e)
-            last_exception = e
 
     # 2. Try OpenRouter Fallback
     if not response_text and openrouter_client:
@@ -417,27 +416,28 @@ def generate_assessment_questions(role=None, resume_text=None):
             print("MCQ Generator (OpenRouter) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
             print("OpenRouter MCQ Generation failed. Error:", e)
-            last_exception = e
 
-    # 3. Handle Parsing or Fallback to Pool
-    try:
-        if not response_text:
-            if last_exception:
-                raise last_exception
-            raise Exception("No active AI service available.")
+    questions = []
+    if response_text:
+        try:
+            start = response_text.find("[")
+            end = response_text.rfind("]") + 1
+            if start != -1 and end > start:
+                clean_json = response_text[start:end]
+                parsed = json.loads(clean_json)
+                if isinstance(parsed, list):
+                    questions = parsed
+        except Exception as e:
+            print("MCQ JSON Parse Error:", e)
 
-        # Parse JSON safely
-        start = response_text.find("[")
-        end = response_text.rfind("]") + 1
-        clean_json = response_text[start:end]
+    # Guarantee exactly 35 questions by merging with FALLBACK_MCQ_POOL if needed
+    if len(questions) < 35:
+        existing_q_texts = {q.get("question") for q in questions if isinstance(q, dict)}
+        for fallback_item in FALLBACK_MCQ_POOL:
+            if len(questions) >= 35:
+                break
+            if fallback_item.get("question") not in existing_q_texts:
+                questions.append(fallback_item)
+                existing_q_texts.add(fallback_item.get("question"))
 
-        parsed = json.loads(clean_json)
-        # Verify we got questions
-        if isinstance(parsed, list) and len(parsed) >= 20:
-            return parsed
-        raise ValueError("Insufficient questions returned from AI")
-
-    except Exception as e:
-        print("MCQ AI Error:", e)
-        # Return full 35 fallback questions pool
-        return FALLBACK_MCQ_POOL
+    return questions[:35]

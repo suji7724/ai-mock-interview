@@ -22,14 +22,18 @@ def get_questions(request):
         ).first()
 
     if interview:
-        # Check if AI-generated questions already exist for this interview
+        # Check if AI-generated questions already exist for this interview AND has at least 35 questions
         existing_questions = Question.objects.filter(
             interview=interview,
             is_ai_generated=True
         )
-        if existing_questions.exists():
+        if existing_questions.count() >= 35:
             serializer = QuestionSerializer(existing_questions, many=True)
             return Response(serializer.data)
+        
+        # Delete old/insufficient questions for this interview (e.g. legacy 10-question data)
+        if existing_questions.exists():
+            existing_questions.delete()
         
         mcq_data = generate_assessment_questions()
         
@@ -61,29 +65,33 @@ def get_questions(request):
             serializer = QuestionSerializer(created_questions, many=True)
             return Response(serializer.data)
 
-    # Fallback to static or freshly generated questions
-    mcq_data = generate_assessment_questions()
-    created_questions = []
-    for item in mcq_data:
-        q_text = item.get("question", "")
-        q_options = item.get("options", [])
-        q_correct = item.get("correct_answer", "")
-        q_cat = item.get("category", "General")
-        q_diff = item.get("difficulty", "Medium")
-        if q_correct not in q_options and q_options:
-            q_options.append(q_correct)
-        question_obj = Question.objects.create(
-            question=q_text,
-            options=q_options,
-            correct_answer=q_correct,
-            category=q_cat,
-            difficulty=q_diff,
-            interview_type="Assessment Round",
-            is_ai_generated=True
-        )
-        created_questions.append(question_obj)
+    # Fallback if no interview_id is provided: return 35 generic questions
+    non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
+    if non_interview_qs.count() < 35:
+        non_interview_qs.delete()
+        mcq_data = generate_assessment_questions()
+        created_questions = []
+        for item in mcq_data:
+            q_text = item.get("question", "")
+            q_options = item.get("options", [])
+            q_correct = item.get("correct_answer", "")
+            q_cat = item.get("category", "General")
+            q_diff = item.get("difficulty", "Medium")
+            if q_correct not in q_options and q_options:
+                q_options.append(q_correct)
+            question_obj = Question.objects.create(
+                question=q_text,
+                options=q_options,
+                correct_answer=q_correct,
+                category=q_cat,
+                difficulty=q_diff,
+                interview_type="Assessment Round",
+                is_ai_generated=True
+            )
+            created_questions.append(question_obj)
+        non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
     
-    serializer = QuestionSerializer(created_questions, many=True)
+    serializer = QuestionSerializer(non_interview_qs[:35], many=True)
     return Response(serializer.data)
 
 
