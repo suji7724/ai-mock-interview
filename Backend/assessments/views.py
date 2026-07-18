@@ -31,15 +31,7 @@ def get_questions(request):
             serializer = QuestionSerializer(existing_questions, many=True)
             return Response(serializer.data)
         
-        # Determine target role & resume text (fallback to role-based only if no resume uploaded)
-        role = interview.role if interview.role else "Software Developer"
-        profile = UserProfile.objects.filter(user=request.user).first()
-        resume_text = profile.resume_text if (profile and profile.resume_text) else ""
-        
-        if not resume_text:
-            resume_text = f"Candidate is applying for the {role} position. No resume file uploaded."
-
-        mcq_data = generate_assessment_questions(role, resume_text)
+        mcq_data = generate_assessment_questions()
         
         created_questions = []
         for item in mcq_data:
@@ -69,9 +61,29 @@ def get_questions(request):
             serializer = QuestionSerializer(created_questions, many=True)
             return Response(serializer.data)
 
-    # Fallback to static database questions
-    static_questions = Question.objects.filter(is_ai_generated=False)
-    serializer = QuestionSerializer(static_questions, many=True)
+    # Fallback to static or freshly generated questions
+    mcq_data = generate_assessment_questions()
+    created_questions = []
+    for item in mcq_data:
+        q_text = item.get("question", "")
+        q_options = item.get("options", [])
+        q_correct = item.get("correct_answer", "")
+        q_cat = item.get("category", "General")
+        q_diff = item.get("difficulty", "Medium")
+        if q_correct not in q_options and q_options:
+            q_options.append(q_correct)
+        question_obj = Question.objects.create(
+            question=q_text,
+            options=q_options,
+            correct_answer=q_correct,
+            category=q_cat,
+            difficulty=q_diff,
+            interview_type="Assessment Round",
+            is_ai_generated=True
+        )
+        created_questions.append(question_obj)
+    
+    serializer = QuestionSerializer(created_questions, many=True)
     return Response(serializer.data)
 
 

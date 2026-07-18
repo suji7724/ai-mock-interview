@@ -26,124 +26,192 @@ if openrouter_key:
 
 
 FALLBACK_MCQ_POOL = [
-    # 5 Resume/Role Fallbacks
+    # 1. Verbal Ability (5 Questions)
     {
-        "question": "Which of the following is a key feature of React?",
-        "options": ["Virtual DOM", "Real DOM only", "Direct database connection", "None of the above"],
-        "correct_answer": "Virtual DOM",
-        "category": "React",
+        "question": "Choose the correct synonym for 'Meticulous'.",
+        "options": ["Careless", "Thorough", "Lazy", "Rough"],
+        "correct_answer": "Thorough",
+        "category": "Verbal Ability",
         "difficulty": "Easy"
     },
     {
-        "question": "In Python, which of the following data structures is immutable?",
-        "options": ["List", "Dictionary", "Tuple", "Set"],
-        "correct_answer": "Tuple",
-        "category": "Python",
+        "question": "Identify the correct antonym for 'Transparent'.",
+        "options": ["Clear", "Opaque", "Lucid", "Bright"],
+        "correct_answer": "Opaque",
+        "category": "Verbal Ability",
         "difficulty": "Easy"
     },
     {
-        "question": "Which HTTP method is typically used to update an existing resource on a server?",
-        "options": ["GET", "POST", "DELETE", "PUT"],
-        "correct_answer": "PUT",
-        "category": "Web Development",
+        "question": "Complete the sentence: Neither of the candidates _____ filled out the application form correctly.",
+        "options": ["has", "have", "are", "were"],
+        "correct_answer": "has",
+        "category": "Verbal Ability",
         "difficulty": "Medium"
     },
     {
-        "question": "What is the primary role of Git in software development?",
-        "options": ["Database storage", "Version control", "Code compilation", "Hosting web servers"],
-        "correct_answer": "Version control",
-        "category": "Git",
+        "question": "Find the correctly spelled word.",
+        "options": ["Accommodate", "Acommodate", "Accomodate", "Acomodate"],
+        "correct_answer": "Accommodate",
+        "category": "Verbal Ability",
         "difficulty": "Easy"
     },
     {
-        "question": "What is the main purpose of an Applicant Tracking System (ATS)?",
+        "question": "Select the idiom that means 'to face a difficult situation with courage'.",
+        "options": ["Bite the bullet", "Break the ice", "Spill the beans", "Burn the midnight oil"],
+        "correct_answer": "Bite the bullet",
+        "category": "Verbal Ability",
+        "difficulty": "Medium"
+    },
+
+    # 2. Logical Reasoning (5 Questions)
+    {
+        "question": "If CAT is coded as 3120, how is DOG coded in the same language?",
+        "options": ["4157", "41512", "4147", "41520"],
+        "correct_answer": "4157",
+        "category": "Logical Reasoning",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Pointing to a photograph, a man said 'I have no brother or sister, but that man's father is my father's son.' Whose photograph was it?",
+        "options": ["His own", "His son's", "His father's", "His nephew's"],
+        "correct_answer": "His son's",
+        "category": "Logical Reasoning",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Which number completes the series: 2, 6, 12, 20, 30, ___?",
+        "options": ["40", "42", "44", "46"],
+        "correct_answer": "42",
+        "category": "Logical Reasoning",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Look at the pattern: 80, 10, 70, 15, 60, ___ What number should come next?",
+        "options": ["20", "25", "50", "30"],
+        "correct_answer": "20",
+        "category": "Logical Reasoning",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "All apples are fruits. All fruits are healthy. Which conclusion follows logically?",
+        "options": ["All apples are healthy", "All healthy items are apples", "Some fruits are not healthy", "No apples are healthy"],
+        "correct_answer": "All apples are healthy",
+        "category": "Logical Reasoning",
+        "difficulty": "Easy"
+    },
+
+    # 3. Operating System (5 Questions)
+    {
+        "question": "What is process scheduling in an operating system?",
+        "options": ["Allocating CPU execution time to active processes", "Saving files to disk", "Compiling source code", "Connecting to network"],
+        "correct_answer": "Allocating CPU execution time to active processes",
+        "category": "Operating System",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What is a deadlock in an operating system?",
         "options": [
-            "To filter resumes automatically based on keywords and formatting",
-            "To generate interview feedback reports",
-            "To conduct audio interviews",
-            "To write unit tests for software applications"
+            "A state where a set of processes are blocked waiting for resources held by each other",
+            "A crash of the CPU kernel",
+            "When RAM memory is completely full",
+            "None of the above"
         ],
-        "correct_answer": "To filter resumes automatically based on keywords and formatting",
-        "category": "General Tech",
+        "correct_answer": "A state where a set of processes are blocked waiting for resources held by each other",
+        "category": "Operating System",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "What is Virtual Memory?",
+        "options": [
+            "Memory management technique using secondary storage as an extension of RAM",
+            "Physical RAM installed on virtual machines",
+            "Cloud storage space",
+            "ROM memory"
+        ],
+        "correct_answer": "Memory management technique using secondary storage as an extension of RAM",
+        "category": "Operating System",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Which of the following is NOT a valid CPU scheduling algorithm?",
+        "options": ["Round Robin", "First-Come, First-Served", "Shortest Job First", "Linear Regression"],
+        "correct_answer": "Linear Regression",
+        "category": "Operating System",
         "difficulty": "Easy"
     },
-    # 3 Computer Networks Fallbacks
     {
-        "question": "Which layer of the OSI model is responsible for routing and forwarding packets?",
+        "question": "What is thrashing in an operating system?",
+        "options": [
+            "Excessive swapping of pages between RAM and disk leading to high CPU idle time",
+            "Overclocking the main processor",
+            "Hard drive failure",
+            "Defragmenting memory"
+        ],
+        "correct_answer": "Excessive swapping of pages between RAM and disk leading to high CPU idle time",
+        "category": "Operating System",
+        "difficulty": "Hard"
+    },
+
+    # 4. Computer Network (5 Questions)
+    {
+        "question": "Which OSI model layer is responsible for routing packets across networks?",
         "options": ["Physical Layer", "Data Link Layer", "Network Layer", "Transport Layer"],
         "correct_answer": "Network Layer",
-        "category": "Computer Networks",
+        "category": "Computer Network",
         "difficulty": "Easy"
     },
     {
         "question": "What is the primary difference between TCP and UDP?",
         "options": [
             "TCP is connection-oriented and reliable, while UDP is connectionless and faster",
-            "UDP is reliable, while TCP is not",
-            "TCP is only used for audio streaming",
+            "UDP is connection-oriented",
+            "TCP is faster than UDP",
             "There is no difference"
         ],
         "correct_answer": "TCP is connection-oriented and reliable, while UDP is connectionless and faster",
-        "category": "Computer Networks",
+        "category": "Computer Network",
         "difficulty": "Medium"
     },
     {
         "question": "What is the function of the Domain Name System (DNS)?",
         "options": [
-            "Translates domain names to IP addresses",
-            "Encrypts network traffic",
+            "Translates human-readable domain names into IP addresses",
             "Allocates IP addresses dynamically",
-            "Monitors network performance"
+            "Encrypts web traffic",
+            "Filters spam emails"
         ],
-        "correct_answer": "Translates domain names to IP addresses",
-        "category": "Computer Networks",
+        "correct_answer": "Translates human-readable domain names into IP addresses",
+        "category": "Computer Network",
         "difficulty": "Easy"
     },
-    # 3 Operating Systems Fallbacks
     {
-        "question": "What is process scheduling in an operating system?",
+        "question": "What port does HTTP default to?",
+        "options": ["80", "443", "21", "22"],
+        "correct_answer": "80",
+        "category": "Computer Network",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What is the primary purpose of a Subnet Mask?",
         "options": [
-            "Allocating CPU execution time to active processes",
-            "Saving files to the disk",
-            "Compiling source code",
-            "Connecting to the internet"
+            "Distinguishes the network portion of an IP address from the host portion",
+            "Encrypts data packets",
+            "Hides user IP address",
+            "Speeds up internet connection"
         ],
-        "correct_answer": "Allocating CPU execution time to active processes",
-        "category": "Operating Systems",
+        "correct_answer": "Distinguishes the network portion of an IP address from the host portion",
+        "category": "Computer Network",
         "difficulty": "Medium"
     },
+
+    # 5. DBMS (5 Questions)
     {
-        "question": "What is a deadlock in an operating system?",
-        "options": [
-            "A state where a set of processes are blocked because each process holds a resource and waits for another",
-            "A crash of the core kernel code",
-            "When a CPU runs out of memory",
-            "None of the above"
-        ],
-        "correct_answer": "A state where a set of processes are blocked because each process holds a resource and waits for another",
-        "category": "Operating Systems",
-        "difficulty": "Hard"
-    },
-    {
-        "question": "What is virtual memory in an operating system?",
-        "options": [
-            "Memory management technique using secondary storage as an extension of RAM",
-            "Physical memory installed on virtual machines only",
-            "Cloud storage space",
-            "ROM memory"
-        ],
-        "correct_answer": "Memory management technique using secondary storage as an extension of RAM",
-        "category": "Operating Systems",
-        "difficulty": "Medium"
-    },
-    # 4 DBMS Fallbacks
-    {
-        "question": "What does ACID stand for in DBMS transactions?",
+        "question": "What does ACID stand for in DBMS?",
         "options": [
             "Atomicity, Consistency, Isolation, Durability",
-            "Authority, Complexity, Indexing, Delivery",
+            "Access, Control, Information, Database",
             "Aggregation, Concurrency, Integrity, Distribution",
-            "Access, Control, Information, Database"
+            "Authority, Complexity, Indexing, Delivery"
         ],
         "correct_answer": "Atomicity, Consistency, Isolation, Durability",
         "category": "DBMS",
@@ -151,70 +219,167 @@ FALLBACK_MCQ_POOL = [
     },
     {
         "question": "Which SQL constraint uniquely identifies each record in a database table?",
-        "options": ["FOREIGN KEY", "UNIQUE", "PRIMARY KEY", "NOT NULL"],
+        "options": ["PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "NOT NULL"],
         "correct_answer": "PRIMARY KEY",
         "category": "DBMS",
         "difficulty": "Easy"
     },
     {
-        "question": "What is a Foreign Key in a database relationship?",
+        "question": "What is a Foreign Key in a relational database?",
         "options": [
-            "A field in one table that refers to the Primary Key in another table",
-            "A key that is encrypted",
-            "A key that can only hold negative values",
+            "A column that references the Primary Key of another table",
+            "An encrypted key",
+            "A primary key from a remote database",
             "None of the above"
         ],
-        "correct_answer": "A field in one table that refers to the Primary Key in another table",
+        "correct_answer": "A column that references the Primary Key of another table",
         "category": "DBMS",
         "difficulty": "Easy"
     },
     {
-        "question": "What is database normalization?",
+        "question": "What is Database Normalization?",
         "options": [
             "Organizing data to minimize redundancy and dependency",
-            "Backing up the database structure",
-            "Converting SQL queries to NoSQL format",
-            "Restarting the database engine"
+            "Backing up the database",
+            "Converting tables to JSON",
+            "Deleting unused tables"
         ],
         "correct_answer": "Organizing data to minimize redundancy and dependency",
         "category": "DBMS",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Which JOIN returns all rows from the left table and matched rows from the right table?",
+        "options": ["LEFT JOIN", "RIGHT JOIN", "INNER JOIN", "FULL OUTER JOIN"],
+        "correct_answer": "LEFT JOIN",
+        "category": "DBMS",
+        "difficulty": "Easy"
+    },
+
+    # 6. OOPs (5 Questions)
+    {
+        "question": "Which OOP principle allows a subclass to provide a specific implementation of a method defined in its superclass?",
+        "options": ["Polymorphism", "Encapsulation", "Abstraction", "Inheritance"],
+        "correct_answer": "Polymorphism",
+        "category": "OOPs",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What is Encapsulation in OOP?",
+        "options": [
+            "Bundling data and methods operating on that data within a single unit and restricting direct access",
+            "Inheriting attributes from parent class",
+            "Creating multiple instances of a class",
+            "Writing functions without classes"
+        ],
+        "correct_answer": "Bundling data and methods operating on that data within a single unit and restricting direct access",
+        "category": "OOPs",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What is an Abstract Class?",
+        "options": [
+            "A class that cannot be instantiated and is meant to be subclassed",
+            "A class with only private variables",
+            "A class that has no methods",
+            "A class with no constructors"
+        ],
+        "correct_answer": "A class that cannot be instantiated and is meant to be subclassed",
+        "category": "OOPs",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "What is the key difference between Method Overloading and Method Overriding?",
+        "options": [
+            "Overloading happens in the same class with different parameters; Overriding happens in subclasses with the same signature",
+            "Overriding happens in the same class",
+            "Overloading requires inheritance",
+            "There is no difference"
+        ],
+        "correct_answer": "Overloading happens in the same class with different parameters; Overriding happens in subclasses with the same signature",
+        "category": "OOPs",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "What is Inheritance in OOP?",
+        "options": [
+            "Mechanism where a new class inherits properties and behaviors from an existing class",
+            "Hiding implementation details",
+            "Defining multiple methods with same name",
+            "Allocating dynamic memory"
+        ],
+        "correct_answer": "Inheritance",
+        "category": "OOPs",
+        "difficulty": "Easy"
+    },
+
+    # 7. Data Structures & Algorithms (5 Questions)
+    {
+        "question": "What is the worst-case time complexity of Quick Sort?",
+        "options": ["O(n^2)", "O(n log n)", "O(n)", "O(1)"],
+        "correct_answer": "O(n^2)",
+        "category": "DSA",
+        "difficulty": "Medium"
+    },
+    {
+        "question": "Which data structure follows the Last In, First Out (LIFO) principle?",
+        "options": ["Stack", "Queue", "Array", "Linked List"],
+        "correct_answer": "Stack",
+        "category": "DSA",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What is the time complexity to search an element in a balanced Binary Search Tree (BST)?",
+        "options": ["O(log n)", "O(n)", "O(1)", "O(n log n)"],
+        "correct_answer": "O(log n)",
+        "category": "DSA",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "Which data structure uses FIFO (First In, First Out) ordering?",
+        "options": ["Queue", "Stack", "Tree", "Graph"],
+        "correct_answer": "Queue",
+        "category": "DSA",
+        "difficulty": "Easy"
+    },
+    {
+        "question": "What algorithm technique is used in Dijkstra's algorithm for finding the shortest path?",
+        "options": ["Greedy approach", "Dynamic Programming", "Divide and Conquer", "Backtracking"],
+        "correct_answer": "Greedy approach",
+        "category": "DSA",
         "difficulty": "Medium"
     }
 ]
 
 
-def generate_assessment_questions(role, resume_text):
-    prompt = f"""
-    You are an expert technical interviewer and computer science evaluator.
-    Candidate Role: {role}
-    Candidate Resume Text:
-    {resume_text}
+def generate_assessment_questions(role=None, resume_text=None):
+    prompt = """
+    You are an expert technical evaluator creating a standard, comprehensive Software Engineering Assessment Test.
 
-    Generate exactly 10 multiple-choice questions (MCQs) to evaluate the candidate's technical skills.
-    
-    The questions must be structured as follows:
-    - Questions 1 to 4: High-quality questions based on the candidate's resume projects, skills, and target role.
-    - Questions 5 to 10: High-quality fundamental questions covering core computer science subjects:
-      * Computer Networks (CN)
-      * Operating Systems (OS)
-      * Database Management Systems (DBMS)
-      (Ensure a balanced spread across these three core subjects)
+    Generate EXACTLY 35 Multiple Choice Questions (MCQs), with EXACTLY 5 questions for each of the following 7 categories:
+    1. Verbal Ability (5 questions)
+    2. Logical Reasoning (5 questions)
+    3. Operating System (5 questions)
+    4. Computer Network (5 questions)
+    5. DBMS (5 questions)
+    6. OOPs (Object-Oriented Programming) (5 questions)
+    7. Data Structures & Algorithms (DSA) (5 questions)
 
     Rules for each MCQ:
     1. Each question must have exactly 4 choices (options).
-    2. One option must be correct.
+    2. Exactly one option must be the correct answer.
     3. Return ONLY a valid JSON array matching the schema below.
-    4. Do not include markdown formatting (like ```json), introduction, or conversational text. Return only the raw JSON.
+    4. Do not include markdown formatting (such as ```json), introduction, or conversational text. Return raw JSON array only.
 
     Schema:
     [
-      {{
+      {
         "question": "Question text...",
         "options": ["Option A", "Option B", "Option C", "Option D"],
-        "correct_answer": "Option A",  // Must match one of the options EXACTLY
-        "category": "Topic (e.g. React, Computer Networks, Operating Systems, DBMS)",
+        "correct_answer": "Option A",
+        "category": "Verbal Ability | Logical Reasoning | Operating System | Computer Network | DBMS | OOPs | DSA",
         "difficulty": "Easy" or "Medium" or "Hard"
-      }},
+      },
       ...
     ]
     """
@@ -229,11 +394,11 @@ def generate_assessment_questions(role, resume_text):
                 model="gemini-2.0-flash",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
-                max_tokens=2000,
-                timeout=7.0,
+                max_tokens=3500,
+                timeout=12.0,
             )
             response_text = response.choices[0].message.content
-            print("MCQ Generator (Gemini) Raw Response:", response_text)
+            print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
             print("Gemini MCQ Generation failed, trying OpenRouter. Error:", e)
             last_exception = e
@@ -245,11 +410,11 @@ def generate_assessment_questions(role, resume_text):
                 model="openrouter/auto",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
-                max_tokens=2000,
-                timeout=7.0,
+                max_tokens=3500,
+                timeout=12.0,
             )
             response_text = response.choices[0].message.content
-            print("MCQ Generator (OpenRouter) Raw Response:", response_text)
+            print("MCQ Generator (OpenRouter) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
             print("OpenRouter MCQ Generation failed. Error:", e)
             last_exception = e
@@ -268,11 +433,11 @@ def generate_assessment_questions(role, resume_text):
 
         parsed = json.loads(clean_json)
         # Verify we got questions
-        if isinstance(parsed, list) and len(parsed) > 0:
+        if isinstance(parsed, list) and len(parsed) >= 20:
             return parsed
-        raise ValueError("Invalid array format")
+        raise ValueError("Insufficient questions returned from AI")
 
     except Exception as e:
         print("MCQ AI Error:", e)
-        # Return a randomized sample from the fallback pool to avoid duplicate questions
-        return random.sample(FALLBACK_MCQ_POOL, min(10, len(FALLBACK_MCQ_POOL)))
+        # Return full 35 fallback questions pool
+        return FALLBACK_MCQ_POOL

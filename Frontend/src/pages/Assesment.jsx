@@ -25,8 +25,8 @@ function Assessment() {
   // Result State
   const [result, setResult] = useState(null);
 
-  // Timer
-  const [time, setTime] = useState(900);
+  // Timer (30 minutes for 35 questions)
+  const [time, setTime] = useState(1800);
 
   const question = questions[currentQuestion] || {};
 
@@ -388,6 +388,13 @@ function Assessment() {
             md:p-12
           "
         >
+          {question?.category && (
+            <div className="mb-4">
+              <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 tracking-wide uppercase">
+                {question.category}
+              </span>
+            </div>
+          )}
           <h2 className="text-3xl md:text-4xl font-bold leading-relaxed">
             {question?.question}
           </h2>

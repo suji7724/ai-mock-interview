@@ -61,10 +61,7 @@ class InterviewCreateView(generics.CreateAPIView):
             if interview.interview_type == "Assessment Round":
                 from assessments.ai_service import generate_assessment_questions
                 from assessments.models import Question as MCQQuestion
-                resume_text = profile.resume_text if (profile and profile.resume_text) else ""
-                if not resume_text:
-                    resume_text = f"Candidate is applying for the {role} position."
-                mcq_data = generate_assessment_questions(role, resume_text)
+                mcq_data = generate_assessment_questions()
                 for item in mcq_data:
                     q_text = item.get("question", "")
                     q_options = item.get("options", [])
