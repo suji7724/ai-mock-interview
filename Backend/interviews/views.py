@@ -127,6 +127,10 @@ class QuestionListView(APIView):
             if interview:
                 interview_type = interview.interview_type
 
+        if interview_type == "Assessment Round":
+            from assessments.views import get_questions as get_assessment_questions
+            return get_assessment_questions(request)
+
         if not interview_type:
             interview_type = "Technical"
 
