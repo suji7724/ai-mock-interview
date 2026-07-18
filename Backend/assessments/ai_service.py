@@ -230,6 +230,7 @@ def generate_assessment_questions(role, resume_text):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
                 max_tokens=2000,
+                timeout=7.0,
             )
             response_text = response.choices[0].message.content
             print("MCQ Generator (Gemini) Raw Response:", response_text)
@@ -245,6 +246,7 @@ def generate_assessment_questions(role, resume_text):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
                 max_tokens=2000,
+                timeout=7.0,
             )
             response_text = response.choices[0].message.content
             print("MCQ Generator (OpenRouter) Raw Response:", response_text)

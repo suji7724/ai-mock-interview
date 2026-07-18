@@ -9,9 +9,14 @@ import Feedback from "./pages/Feedback";
 import Assesment from "./pages/Assesment";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import ProtectedRoute  from "./components/ProtectedRoute";
+import { useEffect } from "react";
 
 
 function App() {
+  useEffect(() => {
+    // Ping the backend to wake it up from Render's free tier sleep
+    fetch("https://ai-mock-interview-s5ou.onrender.com").catch(() => {});
+  }, []);
   return (
     <div className="bg-slate-950 min-h-screen text-white">
       <Routes>

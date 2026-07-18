@@ -106,7 +106,7 @@ def generate_ai_feedback(
         return {
             "overall_score": 70,
             "communication_score": 68,
-            "technical_score": 72,
+            "technical_score": 65,
             "strengths":
                 "Good attempt at answering questions.",
 

@@ -355,7 +355,7 @@ function InterviewSetup() {
               transition
             "
           >
-            {loading ? "Starting Interview..." : "Start AI Interview"}
+            {loading ? "Preparing AI Questions & Session..." : "Start AI Interview"}
           </button>
         </form>
       </div>

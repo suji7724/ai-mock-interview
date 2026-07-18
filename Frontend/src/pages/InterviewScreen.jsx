@@ -163,8 +163,25 @@ function InterviewScreen() {
   // for loading
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        Loading Interview...
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
+        <div className="absolute top-[-150px] left-[-100px] w-[400px] h-[400px] bg-indigo-600/20 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-[-150px] right-[-100px] w-[400px] h-[400px] bg-purple-600/20 blur-3xl rounded-full"></div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 flex flex-col items-center text-center max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl shadow-2xl"
+        >
+          <div className="relative mb-6">
+            <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+            <BrainCircuit className="w-8 h-8 text-indigo-400 absolute inset-0 m-auto" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            Initializing AI Session
+          </h2>
+          <p className="text-slate-400 text-sm">
+            Fetching customized questions tailored to your profile and target role...
+          </p>
+        </motion.div>
       </div>
     );
   }

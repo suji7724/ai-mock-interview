@@ -67,6 +67,7 @@ Rules:
                     ],
                     temperature=0.7,
                     max_tokens=1000,
+                    timeout=7.0,
                 )
                 response_text = response.choices[0].message.content
                 print("Generated Questions (Gemini) Response:", response_text)
@@ -86,6 +87,7 @@ Rules:
                     ],
                     temperature=0.7,
                     max_tokens=1000,
+                    timeout=7.0,
                 )
                 response_text = response.choices[0].message.content
                 print("Generated Questions (OpenRouter) Response:", response_text)

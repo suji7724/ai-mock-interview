@@ -53,8 +53,62 @@ class InterviewCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-
-        serializer.save(user=self.request.user)
+        interview = serializer.save(user=self.request.user)
+        try:
+            profile = UserProfile.objects.filter(user=self.request.user).first()
+            role = interview.role if interview.role else "Software Developer"
+            
+            if interview.interview_type == "Assessment Round":
+                from assessments.ai_service import generate_assessment_questions
+                from assessments.models import Question as MCQQuestion
+                resume_text = profile.resume_text if (profile and profile.resume_text) else ""
+                if not resume_text:
+                    resume_text = f"Candidate is applying for the {role} position."
+                mcq_data = generate_assessment_questions(role, resume_text)
+                for item in mcq_data:
+                    q_text = item.get("question", "")
+                    q_options = item.get("options", [])
+                    q_correct = item.get("correct_answer", "")
+                    q_cat = item.get("category", "General")
+                    q_diff = item.get("difficulty", "Medium")
+                    if q_correct not in q_options and q_options:
+                        q_options.append(q_correct)
+                    MCQQuestion.objects.create(
+                        question=q_text,
+                        options=q_options,
+                        correct_answer=q_correct,
+                        category=q_cat,
+                        difficulty=q_diff,
+                        interview_type="Assessment Round",
+                        interview=interview,
+                        is_ai_generated=True
+                    )
+            else:
+                resume_text = profile.resume_text if (profile and profile.resume_text) else f"Targeting {role} role."
+                ai_target_count = random.randint(5, 10)
+                ai_response = generate_resume_questions(role, resume_text, count=ai_target_count)
+                questions_list = [q.strip() for q in ai_response.split("\n") if q.strip()]
+                if not questions_list:
+                    questions_list = [
+                        f"Explain the technical challenges you solved in your latest project as a {role}.",
+                        f"How do you optimize performance in a {role} application?",
+                        f"Describe your favorite tools and libraries when working as a {role}.",
+                        f"What are the best practices for structuring code in a {role} codebase?",
+                        f"How do you handle error logging and debugging in production for a {role} app?"
+                    ][:ai_target_count]
+                for question_text in questions_list:
+                    clean_text = re.sub(r'^\d+[\.\)]\s*|-\s*', '', question_text.strip())
+                    if clean_text:
+                        Question.objects.create(
+                            question_text=clean_text,
+                            category="Resume",
+                            difficulty="Medium",
+                            interview_type=interview.interview_type,
+                            is_ai_generated=True,
+                            interview=interview,
+                        )
+        except Exception as e:
+            print("Pre-generating questions exception:", e)
 
 # Question views
 class QuestionListView(APIView):
