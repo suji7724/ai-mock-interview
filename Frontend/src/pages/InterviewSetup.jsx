@@ -10,7 +10,7 @@ function InterviewSetup() {
     role: "",
     skills: "",
     experience: "",
-    interviewType: "",
+    interviewType: "Technical",
   });
 
   const navigate = useNavigate();
@@ -47,6 +47,8 @@ function InterviewSetup() {
 
     setError("");
 
+    const selectedType = formData.interviewType || "Technical";
+
     try {
       console.log("Selected Resume:", resume);
       if (resume) {
@@ -64,11 +66,11 @@ function InterviewSetup() {
       const response = await api.post(
         "/interviews/create/",
         {
-          role: formData.role,
+          role: formData.role || "Software Developer",
 
-          interview_type: formData.interviewType,
+          interview_type: selectedType,
 
-          experience_level: formData.experience,
+          experience_level: formData.experience || "Fresher",
         }
       );
 
@@ -78,7 +80,7 @@ function InterviewSetup() {
         role: response.data.role,
       };
 
-      if (response.data.interview_type === "Assessment Round") {
+      if (response.data.interview_type && response.data.interview_type.toLowerCase().includes("assessment")) {
         navigate("/assesment", {
           state: navigationState,
         });

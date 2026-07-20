@@ -1,6 +1,7 @@
 import os
 import json
 import random
+import re
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -352,11 +353,46 @@ FALLBACK_MCQ_POOL = [
 ]
 
 
+def parse_mcq_json(response_text):
+    if not response_text:
+        return []
+
+    # Attempt 1: Direct JSON array parse
+    try:
+        start = response_text.find("[")
+        end = response_text.rfind("]") + 1
+        if start != -1 and end > start:
+            clean_json = response_text[start:end]
+            parsed = json.loads(clean_json)
+            if isinstance(parsed, list):
+                valid_items = [
+                    item for item in parsed
+                    if isinstance(item, dict) and "question" in item and "options" in item and "correct_answer" in item
+                ]
+                if valid_items:
+                    return valid_items
+    except Exception as e:
+        print("Full MCQ JSON parse failed, attempting regex extraction. Error:", e)
+
+    # Attempt 2: Extract individual valid JSON objects using regex (handles truncated output)
+    parsed_items = []
+    matches = re.findall(r'\{[^{}]*\}', response_text, re.DOTALL)
+    for m in matches:
+        try:
+            item = json.loads(m)
+            if isinstance(item, dict) and "question" in item and "options" in item and "correct_answer" in item:
+                parsed_items.append(item)
+        except Exception:
+            continue
+
+    return parsed_items
+
+
 def generate_assessment_questions(role=None, resume_text=None):
     prompt = """
     You are an expert technical evaluator creating a standard, comprehensive Software Engineering Assessment Test.
 
-    Generate EXACTLY 35 Multiple Choice Questions (MCQs), with EXACTLY 5 questions for each of the following 7 categories:
+    Generate EXACTLY 35 Multiple Choice Questions (MCQs), concise and clear, with EXACTLY 5 questions for each of the following 7 categories:
     1. Verbal Ability (5 questions)
     2. Logical Reasoning (5 questions)
     3. Operating System (5 questions)
@@ -364,13 +400,13 @@ def generate_assessment_questions(role=None, resume_text=None):
     5. DBMS (5 questions)
     6. OOPs (Object-Oriented Programming) (5 questions)
     7. Data Structures & Algorithms (DSA) (5 questions)
+    Difficulty: Medium to Hard. Keep question and option text concise to avoid long text.
 
     Rules for each MCQ:
-    1. Each question must have exactly 4 choices (options).
+    1. Each question must have exactly 4 short choices (options).
     2. Exactly one option must be the correct answer.
-    3. Do NOT include resume-based, project-specific, or candidate-specific questions.
-    4. Return ONLY a valid JSON array matching the schema below.
-    5. Do not include markdown formatting (such as ```json), introduction, or conversational text. Return raw JSON array only.
+    3. Do NOT include resume-based or candidate-specific questions.
+    4. Return ONLY a raw JSON array of objects. Do not use markdown backticks.
 
     Schema:
     [
@@ -378,57 +414,46 @@ def generate_assessment_questions(role=None, resume_text=None):
         "question": "Question text...",
         "options": ["Option A", "Option B", "Option C", "Option D"],
         "correct_answer": "Option A",
-        "category": "Verbal Ability | Logical Reasoning | Operating System | Computer Network | DBMS | OOPs | DSA",
-        "difficulty": "Easy" or "Medium" or "Hard"
-      },
-      ...
+        "category": "Verbal Ability",
+        "difficulty": "Medium"
+      }
     ]
     """
 
     response_text = None
 
-    # 1. Try Gemini
-    if gemini_client:
-        try:
-            response = gemini_client.chat.completions.create(
-                model="gemini-2.0-flash",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-                max_tokens=3500,
-                timeout=12.0,
-            )
-            response_text = response.choices[0].message.content
-            print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
-        except Exception as e:
-            print("Gemini MCQ Generation failed, trying OpenRouter. Error:", e)
-
-    # 2. Try OpenRouter Fallback
-    if not response_text and openrouter_client:
+    # 1. Try OpenRouter First (or Gemini)
+    if openrouter_client:
         try:
             response = openrouter_client.chat.completions.create(
                 model="openrouter/auto",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
-                max_tokens=3500,
-                timeout=12.0,
+                max_tokens=6000,
+                timeout=25.0,
             )
             response_text = response.choices[0].message.content
             print("MCQ Generator (OpenRouter) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
-            print("OpenRouter MCQ Generation failed. Error:", e)
+            print("OpenRouter MCQ Generation failed, trying Gemini. Error:", e)
 
-    questions = []
-    if response_text:
+    # 2. Try Gemini as fallback if OpenRouter fails
+    if not response_text and gemini_client:
         try:
-            start = response_text.find("[")
-            end = response_text.rfind("]") + 1
-            if start != -1 and end > start:
-                clean_json = response_text[start:end]
-                parsed = json.loads(clean_json)
-                if isinstance(parsed, list):
-                    questions = parsed
+            response = gemini_client.chat.completions.create(
+                model="gemini-2.0-flash",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.5,
+                max_tokens=6000,
+                timeout=25.0,
+            )
+            response_text = response.choices[0].message.content
+            print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
-            print("MCQ JSON Parse Error:", e)
+            print("Gemini MCQ Generation failed. Error:", e)
+
+    questions = parse_mcq_json(response_text)
+    print(f"Successfully parsed {len(questions)} AI generated MCQ questions.")
 
     # Guarantee exactly 35 questions by merging with FALLBACK_MCQ_POOL if needed
     if len(questions) < 35:
@@ -441,3 +466,4 @@ def generate_assessment_questions(role=None, resume_text=None):
                 existing_q_texts.add(fallback_item.get("question"))
 
     return questions[:35]
+

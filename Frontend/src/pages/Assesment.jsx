@@ -189,9 +189,8 @@ function Assessment() {
           >
             <div className="flex justify-center mb-6">
               <div
-                className={`w-24 h-24 rounded-full flex items-center justify-center ${
-                  passed ? "bg-green-500/20" : "bg-red-500/20"
-                }`}
+                className={`w-24 h-24 rounded-full flex items-center justify-center ${passed ? "bg-green-500/20" : "bg-red-500/20"
+                  }`}
               >
                 <CheckCircle2
                   size={50}
@@ -256,7 +255,7 @@ function Assessment() {
               <div>
                 <h2 className="text-3xl font-bold flex items-center gap-3">
                   <FileText className="text-indigo-400" size={28} />
-                  Question & Mistake Analysis
+                  Performance Analysis
                 </h2>
                 <p className="text-slate-400 text-sm mt-1">
                   Examine your answers, pinpoint mistakes, and review explanations.
@@ -267,25 +266,22 @@ function Assessment() {
               <div className="flex bg-slate-900 border border-slate-800 p-1.5 rounded-2xl gap-1 self-start sm:self-auto">
                 <button
                   onClick={() => setFilter("all")}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-                    filter === "all" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-white"
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${filter === "all" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-white"
+                    }`}
                 >
                   All ({analysisDetails.length})
                 </button>
                 <button
                   onClick={() => setFilter("incorrect")}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-                    filter === "incorrect" ? "bg-red-600 text-white shadow" : "text-slate-400 hover:text-white"
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${filter === "incorrect" ? "bg-red-600 text-white shadow" : "text-slate-400 hover:text-white"
+                    }`}
                 >
                   Mistakes ({incorrectCount})
                 </button>
                 <button
                   onClick={() => setFilter("correct")}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-                    filter === "correct" ? "bg-green-600 text-white shadow" : "text-slate-400 hover:text-white"
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${filter === "correct" ? "bg-green-600 text-white shadow" : "text-slate-400 hover:text-white"
+                    }`}
                 >
                   Correct ({correctCount})
                 </button>
@@ -300,9 +296,8 @@ function Assessment() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={`bg-slate-900 border rounded-3xl p-6 md:p-8 ${
-                    item.is_correct ? "border-slate-800" : "border-red-500/40"
-                  }`}
+                  className={`bg-slate-900 border rounded-3xl p-6 md:p-8 ${item.is_correct ? "border-slate-800" : "border-red-500/40"
+                    }`}
                 >
                   {/* Top Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -519,10 +514,9 @@ function Assessment() {
                   flex
                   items-center
                   justify-between
-                  ${
-                    selectedAnswers[question.id] === option
-                      ? "bg-indigo-600 border-indigo-500"
-                      : "bg-slate-800 border-slate-700 hover:border-indigo-500/40"
+                  ${selectedAnswers[question.id] === option
+                    ? "bg-indigo-600 border-indigo-500"
+                    : "bg-slate-800 border-slate-700 hover:border-indigo-500/40"
                   }
                 `}
               >

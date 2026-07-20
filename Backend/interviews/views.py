@@ -58,10 +58,12 @@ class InterviewCreateView(generics.CreateAPIView):
             profile = UserProfile.objects.filter(user=self.request.user).first()
             role = interview.role if interview.role else "Software Developer"
             
-            if interview.interview_type == "Assessment Round":
+            is_assessment = "assessment" in str(interview.interview_type).lower()
+            if is_assessment:
                 from assessments.ai_service import generate_assessment_questions
                 from assessments.models import Question as MCQQuestion
                 MCQQuestion.objects.filter(interview=interview).delete()
+                Question.objects.filter(interview=interview).delete()
                 mcq_data = generate_assessment_questions()
                 for item in mcq_data:
                     q_text = item.get("question", "")
@@ -127,7 +129,7 @@ class QuestionListView(APIView):
             if interview:
                 interview_type = interview.interview_type
 
-        if interview_type == "Assessment Round":
+        if interview_type and ("assessment" in str(interview_type).lower()):
             from assessments.views import get_questions as get_assessment_questions
             return get_assessment_questions(request)
 

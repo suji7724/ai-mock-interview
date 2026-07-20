@@ -62,8 +62,12 @@ function InterviewScreen() {
   const question = questions[currentQuestion] || {};
   // fetching questions
   useEffect(() => {
+    if (interviewType && interviewType.toLowerCase().includes("assessment")) {
+      navigate("/assesment", { state: { interviewId, interviewType } });
+      return;
+    }
     fetchQuestions();
-  }, []);
+  }, [interviewId, interviewType]);
   // this is the fetch function
   const fetchQuestions = async () => {
     try {

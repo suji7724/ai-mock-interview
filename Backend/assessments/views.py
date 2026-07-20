@@ -22,18 +22,16 @@ def get_questions(request):
         ).first()
 
     if interview:
-        # Check if AI-generated questions already exist for this interview AND has at least 35 questions
-        existing_questions = Question.objects.filter(
-            interview=interview,
-            is_ai_generated=True
-        )
-        if existing_questions.count() >= 35:
+        # Check if 35 MCQ questions already exist for this interview
+        existing_questions = Question.objects.filter(interview=interview)
+        if existing_questions.count() == 35:
             serializer = QuestionSerializer(existing_questions, many=True)
             return Response(serializer.data)
         
-        # Delete old/insufficient questions for this interview (e.g. legacy 10-question data)
-        if existing_questions.exists():
-            existing_questions.delete()
+        # Clean up old/insufficient/accidental questions for this interview across both models
+        existing_questions.delete()
+        from interviews.models import Question as InterviewQuestion
+        InterviewQuestion.objects.filter(interview=interview).delete()
         
         mcq_data = generate_assessment_questions()
         
@@ -45,7 +43,6 @@ def get_questions(request):
             q_cat = item.get("category", "General")
             q_diff = item.get("difficulty", "Medium")
             
-            # Ensure correct answer matches one of the options
             if q_correct not in q_options and q_options:
                 q_options.append(q_correct)
             
@@ -62,12 +59,12 @@ def get_questions(request):
             created_questions.append(question_obj)
         
         if created_questions:
-            serializer = QuestionSerializer(created_questions, many=True)
+            serializer = QuestionSerializer(created_questions[:35], many=True)
             return Response(serializer.data)
 
     # Fallback if no interview_id is provided: return 35 generic questions
     non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
-    if non_interview_qs.count() < 35:
+    if non_interview_qs.count() != 35:
         non_interview_qs.delete()
         mcq_data = generate_assessment_questions()
         created_questions = []
