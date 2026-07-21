@@ -34,7 +34,28 @@ function Signup() {
     } catch (error) {
       console.log(error);
 
-      setError(error.response?.data?.email?.[0] || "Signup failed");
+      const resData = error.response?.data;
+      if (resData) {
+        if (typeof resData === "string") {
+          setError(resData);
+        } else if (resData.email) {
+          setError(Array.isArray(resData.email) ? resData.email[0] : resData.email);
+        } else if (resData.full_name) {
+          setError(Array.isArray(resData.full_name) ? resData.full_name[0] : resData.full_name);
+        } else if (resData.password) {
+          setError(Array.isArray(resData.password) ? resData.password[0] : resData.password);
+        } else if (resData.detail) {
+          setError(resData.detail);
+        } else if (resData.non_field_errors) {
+          setError(Array.isArray(resData.non_field_errors) ? resData.non_field_errors[0] : resData.non_field_errors);
+        } else {
+          const firstKey = Object.keys(resData)[0];
+          const val = resData[firstKey];
+          setError(Array.isArray(val) ? `${firstKey}: ${val[0]}` : String(val));
+        }
+      } else {
+        setError("Network error or server unreachable. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
