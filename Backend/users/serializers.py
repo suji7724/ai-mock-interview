@@ -25,30 +25,31 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-
-        full_name = validated_data.pop('full_name').strip()
-
+        full_name = validated_data.pop('full_name', '').strip()
         email = validated_data['email'].strip().lower()
+        password = validated_data['password']
 
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=validated_data['password']
-        )
+        if User.objects.filter(username__iexact=email).exists() or User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError({"email": ["An account with this email already exists."]})
 
-        # Store full name
-        user.first_name = full_name
-
-        user.save()
-
-        return user
+        try:
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=password
+            )
+            user.first_name = full_name
+            user.save()
+            return user
+        except Exception as e:
+            raise serializers.ValidationError({"email": ["An account with this email already exists or invalid data provided."]})
 
     # validate from duplicate email
     def validate_email(self, value):
         email_clean = value.strip().lower()
-        if User.objects.filter(email__iexact=email_clean).exists():
+        if User.objects.filter(email__iexact=email_clean).exists() or User.objects.filter(username__iexact=email_clean).exists():
             raise serializers.ValidationError(
-                "Email already exists"
+                "An account with this email already exists."
             )
 
         return email_clean
