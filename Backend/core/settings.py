@@ -116,12 +116,17 @@ DATABASES = {
     }
 }
 
-if os.getenv("DATABASE_URL"):
-    DATABASES["default"] = dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+if os.getenv("DATABASE_URL") and os.getenv("DATABASE_URL").strip():
+    try:
+        db_config = dj_database_url.config(
+            default=os.getenv("DATABASE_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+        if db_config and db_config.get("NAME"):
+            DATABASES["default"] = db_config
+    except Exception as e:
+        print("DATABASE_URL config error, using SQLite default fallback:", e)
 
 
 # Password validation
