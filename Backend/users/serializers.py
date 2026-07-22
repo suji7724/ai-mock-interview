@@ -84,9 +84,20 @@ class LoginSerializer(serializers.Serializer):
             user = User.objects.filter(username__iexact=email).first()
 
         if user is None:
-            raise serializers.ValidationError(
-                "User with this email does not exist."
-            )
+            # Auto-provision user if free-tier container restarted and reset SQLite
+            try:
+                first_name = email.split('@')[0].capitalize()
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=password
+                )
+                user.first_name = first_name
+                user.save()
+            except Exception:
+                raise serializers.ValidationError(
+                    "User with this email does not exist."
+                )
 
         # Check password directly
         if not user.check_password(password):

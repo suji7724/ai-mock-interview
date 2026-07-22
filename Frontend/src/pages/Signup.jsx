@@ -30,11 +30,37 @@ function Signup() {
 
       console.log(response.data);
 
-      navigate("/login");
-    } catch (error) {
-      console.log(error);
+      if (response.data.access) {
+        // Store Access Token
+        localStorage.setItem("accessToken", response.data.access);
 
-      setError(error.response?.data?.email?.[0] || "Signup failed");
+        // Store Refresh Token
+        localStorage.setItem("refreshToken", response.data.refresh);
+
+        // Store User Info
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Redirect directly to home dashboard
+        navigate("/");
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      console.log("Signup error:", err);
+      const resData = err.response?.data;
+      let errorMsg = "Signup failed";
+      if (resData) {
+        if (typeof resData === "string") {
+          errorMsg = resData;
+        } else if (resData.email) {
+          errorMsg = Array.isArray(resData.email) ? resData.email[0] : resData.email;
+        } else if (resData.detail) {
+          errorMsg = resData.detail;
+        } else if (resData.non_field_errors) {
+          errorMsg = Array.isArray(resData.non_field_errors) ? resData.non_field_errors[0] : resData.non_field_errors;
+        }
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
