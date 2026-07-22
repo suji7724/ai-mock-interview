@@ -429,13 +429,13 @@ def generate_assessment_questions(role=None, resume_text=None):
                 model="openrouter/auto",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
-                max_tokens=6000,
-                timeout=25.0,
+                max_tokens=2000,
+                timeout=4.0,
             )
             response_text = response.choices[0].message.content
             print("MCQ Generator (OpenRouter) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
-            print("OpenRouter MCQ Generation failed, trying Gemini. Error:", e)
+            print("OpenRouter MCQ Generation skipped or timed out, using fallback. Error:", e)
 
     # 2. Try Gemini as fallback if OpenRouter fails
     if not response_text and gemini_client:
@@ -444,13 +444,13 @@ def generate_assessment_questions(role=None, resume_text=None):
                 model="gemini-2.0-flash",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
-                max_tokens=6000,
-                timeout=25.0,
+                max_tokens=2000,
+                timeout=4.0,
             )
             response_text = response.choices[0].message.content
             print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
         except Exception as e:
-            print("Gemini MCQ Generation failed. Error:", e)
+            print("Gemini MCQ Generation skipped or timed out. Error:", e)
 
     questions = parse_mcq_json(response_text)
     print(f"Successfully parsed {len(questions)} AI generated MCQ questions.")

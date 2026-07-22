@@ -12,183 +12,202 @@ from .ai_service import generate_assessment_questions
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_questions(request):
-    interview_id = request.query_params.get("interview_id")
-    
-    interview = None
-    if interview_id:
-        interview = Interview.objects.filter(
-            id=interview_id,
-            user=request.user
-        ).first()
+    try:
+        interview_id = request.query_params.get("interview_id")
+        
+        interview = None
+        if interview_id:
+            interview = Interview.objects.filter(
+                id=interview_id,
+                user=request.user
+            ).first()
 
-    if interview:
-        # Check if 35 MCQ questions already exist for this interview
-        existing_questions = Question.objects.filter(interview=interview)
-        if existing_questions.count() == 35:
-            serializer = QuestionSerializer(existing_questions, many=True)
-            return Response(serializer.data)
-        
-        # Clean up old/insufficient/accidental questions for this interview across both models
-        existing_questions.delete()
-        from interviews.models import Question as InterviewQuestion
-        InterviewQuestion.objects.filter(interview=interview).delete()
-        
-        mcq_data = generate_assessment_questions()
-        
-        created_questions = []
-        for item in mcq_data:
-            q_text = item.get("question", "")
-            q_options = item.get("options", [])
-            q_correct = item.get("correct_answer", "")
-            q_cat = item.get("category", "General")
-            q_diff = item.get("difficulty", "Medium")
+        if interview:
+            # Check if 35 MCQ questions already exist for this interview
+            existing_questions = Question.objects.filter(interview=interview)
+            if existing_questions.count() == 35:
+                serializer = QuestionSerializer(existing_questions, many=True)
+                return Response(serializer.data)
             
-            if q_correct not in q_options and q_options:
-                q_options.append(q_correct)
+            # Clean up old/insufficient/accidental questions for this interview across both models
+            existing_questions.delete()
+            from interviews.models import Question as InterviewQuestion
+            InterviewQuestion.objects.filter(interview=interview).delete()
             
-            question_obj = Question.objects.create(
-                question=q_text,
-                options=q_options,
-                correct_answer=q_correct,
-                category=q_cat,
-                difficulty=q_diff,
-                interview_type="Assessment Round",
-                interview=interview,
-                is_ai_generated=True
-            )
-            created_questions.append(question_obj)
-        
-        if created_questions:
-            serializer = QuestionSerializer(created_questions[:35], many=True)
-            return Response(serializer.data)
+            mcq_data = generate_assessment_questions()
+            
+            created_questions = []
+            for item in mcq_data:
+                q_text = item.get("question", "")
+                q_options = item.get("options", [])
+                q_correct = item.get("correct_answer", "")
+                q_cat = item.get("category", "General")
+                q_diff = item.get("difficulty", "Medium")
+                
+                if q_correct not in q_options and q_options:
+                    q_options.append(q_correct)
+                
+                question_obj = Question.objects.create(
+                    question=q_text,
+                    options=q_options,
+                    correct_answer=q_correct,
+                    category=q_cat,
+                    difficulty=q_diff,
+                    interview_type="Assessment Round",
+                    interview=interview,
+                    is_ai_generated=True
+                )
+                created_questions.append(question_obj)
+            
+            if created_questions:
+                serializer = QuestionSerializer(created_questions[:35], many=True)
+                return Response(serializer.data)
 
-    # Fallback if no interview_id is provided: return 35 generic questions
-    non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
-    if non_interview_qs.count() != 35:
-        non_interview_qs.delete()
-        mcq_data = generate_assessment_questions()
-        created_questions = []
-        for item in mcq_data:
-            q_text = item.get("question", "")
-            q_options = item.get("options", [])
-            q_correct = item.get("correct_answer", "")
-            q_cat = item.get("category", "General")
-            q_diff = item.get("difficulty", "Medium")
-            if q_correct not in q_options and q_options:
-                q_options.append(q_correct)
-            question_obj = Question.objects.create(
-                question=q_text,
-                options=q_options,
-                correct_answer=q_correct,
-                category=q_cat,
-                difficulty=q_diff,
-                interview_type="Assessment Round",
-                is_ai_generated=True
-            )
-            created_questions.append(question_obj)
+        # Fallback if no interview_id is provided or interview matching fails: return 35 generic questions
         non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
-    
-    serializer = QuestionSerializer(non_interview_qs[:35], many=True)
-    return Response(serializer.data)
+        if non_interview_qs.count() != 35:
+            non_interview_qs.delete()
+            mcq_data = generate_assessment_questions()
+            created_questions = []
+            for item in mcq_data:
+                q_text = item.get("question", "")
+                q_options = item.get("options", [])
+                q_correct = item.get("correct_answer", "")
+                q_cat = item.get("category", "General")
+                q_diff = item.get("difficulty", "Medium")
+                if q_correct not in q_options and q_options:
+                    q_options.append(q_correct)
+                question_obj = Question.objects.create(
+                    question=q_text,
+                    options=q_options,
+                    correct_answer=q_correct,
+                    category=q_cat,
+                    difficulty=q_diff,
+                    interview_type="Assessment Round",
+                    is_ai_generated=True
+                )
+                created_questions.append(question_obj)
+            non_interview_qs = Question.objects.filter(interview=None, interview_type="Assessment Round")
+        
+        serializer = QuestionSerializer(non_interview_qs[:35], many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        print("Error in get_questions view:", e)
+        from .ai_service import FALLBACK_MCQ_POOL
+        return Response(FALLBACK_MCQ_POOL[:35])
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_assessment(request):
-    answers = request.data.get("answers", {})
-    interview_id = request.data.get("interview_id")
-    
-    interview = None
-    if interview_id:
-        interview = Interview.objects.filter(
-            id=interview_id,
-            user=request.user
-        ).first()
-
-    if interview:
-        questions = Question.objects.filter(interview=interview)
-    else:
-        # Fallback to latest Assessment Round interview of this user
-        latest_interview = Interview.objects.filter(
-            user=request.user,
-            interview_type="Assessment Round"
-        ).order_by("-created_at").first()
+    try:
+        answers = request.data.get("answers", {})
+        interview_id = request.data.get("interview_id")
         
-        if latest_interview:
-            questions = Question.objects.filter(interview=latest_interview)
+        interview = None
+        if interview_id:
+            interview = Interview.objects.filter(
+                id=interview_id,
+                user=request.user
+            ).first()
+
+        if interview:
+            questions = Question.objects.filter(interview=interview)
         else:
+            # Fallback to latest Assessment Round interview of this user
+            latest_interview = Interview.objects.filter(
+                user=request.user,
+                interview_type="Assessment Round"
+            ).order_by("-created_at").first()
+            
+            if latest_interview:
+                questions = Question.objects.filter(interview=latest_interview)
+            else:
+                questions = Question.objects.filter(is_ai_generated=False)
+
+        if not questions.exists():
             questions = Question.objects.filter(is_ai_generated=False)
 
-    if not questions.exists():
-        questions = Question.objects.filter(is_ai_generated=False)
+        score = 0
+        total = questions.count()
+        details = []
 
-    score = 0
-    total = questions.count()
-    details = []
+        for question in questions:
+            user_answer = answers.get(str(question.id))
+            is_correct = (user_answer == question.correct_answer)
+            if is_correct:
+                score += 1
 
-    for question in questions:
-        user_answer = answers.get(str(question.id))
-        is_correct = (user_answer == question.correct_answer)
-        if is_correct:
-            score += 1
+            details.append({
+                "id": question.id,
+                "question": question.question,
+                "options": question.options,
+                "user_answer": user_answer if user_answer else "Not Answered",
+                "correct_answer": question.correct_answer,
+                "category": question.category,
+                "is_correct": is_correct,
+            })
+            
+        percentage = round((score / total) * 100, 2) if total > 0 else 0
 
-        details.append({
-            "id": question.id,
-            "question": question.question,
-            "options": question.options,
-            "user_answer": user_answer if user_answer else "Not Answered",
-            "correct_answer": question.correct_answer,
-            "category": question.category,
-            "is_correct": is_correct,
+        # Save Result
+        AssessmentResult.objects.create(
+            user=request.user,
+            score=score,
+            total=total,
+            percentage=percentage
+        )
+
+        return Response({
+            "score": score,
+            "total": total,
+            "percentage": percentage,
+            "details": details
         })
-        
-    percentage = round((score / total) * 100, 2) if total > 0 else 0
-
-    # Save Result
-    AssessmentResult.objects.create(
-        user=request.user,
-        score=score,
-        total=total,
-        percentage=percentage
-    )
-
-    return Response({
-        "score": score,
-        "total": total,
-        "percentage": percentage,
-        "details": details
-    })
+    except Exception as e:
+        print("Error submitting assessment:", e)
+        return Response({
+            "score": 0,
+            "total": 35,
+            "percentage": 0,
+            "details": []
+        })
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
-    results = AssessmentResult.objects.filter(
-        user=request.user
-    )
+    try:
+        results = AssessmentResult.objects.filter(
+            user=request.user
+        )
 
-    total_tests = results.count()
-    average_score = 0
+        total_tests = results.count()
+        average_score = 0
 
-    if total_tests > 0:
-        average_score = sum(
-            r.percentage for r in results
-        ) / total_tests
+        if total_tests > 0:
+            average_score = sum(
+                r.percentage for r in results
+            ) / total_tests
 
-    latest_result = results.order_by(
-        '-created_at'
-    ).first()
+        latest_result = results.order_by(
+            '-created_at'
+        ).first()
 
-    return Response({
-        "user": request.user.first_name,
-        "total_tests": total_tests,
-        "average_score": round(average_score, 2),
-        "latest_score": (
-            latest_result.score
-            if latest_result else 0
-        ),
-        "latest_total": (
-            latest_result.total
-            if latest_result else 0
-        ),
-    })
+        return Response({
+            "user": request.user.first_name if request.user.first_name else request.user.username,
+            "total_tests": total_tests,
+            "average_score": round(average_score, 2),
+            "latest_score": (
+                latest_result.score
+                if latest_result else 0
+            ),
+        })
+    except Exception as e:
+        print("Error fetching dashboard stats:", e)
+        return Response({
+            "user": request.user.username,
+            "total_tests": 0,
+            "average_score": 0,
+            "latest_score": 0,
+        })
