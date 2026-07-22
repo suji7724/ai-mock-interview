@@ -36,7 +36,10 @@ function Login() {
     setError("");
 
     try {
-      const response = await api.post("/users/login/", formData);
+      const response = await api.post("/users/login/", {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
 
       // Store Access Token
       localStorage.setItem("accessToken", response.data.access);
@@ -50,7 +53,25 @@ function Login() {
       // Redirect User
       navigate("/");
     } catch (err) {
-      setError("Invalid email or password");
+      console.log("Login error:", err);
+      const resData = err.response?.data;
+      let errorMsg = "Invalid email or password";
+      if (resData) {
+        if (typeof resData === "string") {
+          errorMsg = resData;
+        } else if (resData.non_field_errors) {
+          errorMsg = Array.isArray(resData.non_field_errors) ? resData.non_field_errors[0] : resData.non_field_errors;
+        } else if (resData.detail) {
+          errorMsg = resData.detail;
+        } else if (resData.email) {
+          errorMsg = Array.isArray(resData.email) ? resData.email[0] : resData.email;
+        } else if (resData.password) {
+          errorMsg = Array.isArray(resData.password) ? resData.password[0] : resData.password;
+        }
+      } else if (!err.response) {
+        errorMsg = "Server connection failed or taking time to wake up. Please wait a moment and try again.";
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

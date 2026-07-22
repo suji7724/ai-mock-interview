@@ -26,9 +26,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        full_name = validated_data.pop('full_name')
+        full_name = validated_data.pop('full_name').strip()
 
-        email = validated_data['email']
+        email = validated_data['email'].strip().lower()
 
         user = User.objects.create_user(
             username=email,
@@ -42,14 +42,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
     # validate from duplicate email
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        email_clean = value.strip().lower()
+        if User.objects.filter(email__iexact=email_clean).exists():
             raise serializers.ValidationError(
                 "Email already exists"
             )
 
-        return value
+        return email_clean
 
 # Login serializer for user login
 class LoginSerializer(serializers.Serializer):
@@ -60,12 +62,12 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
 
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()
 
         password = data.get('password')
 
-        # Find user using email
-        user = User.objects.filter(email=email).first()
+        # Find user using case-insensitive email match
+        user = User.objects.filter(email__iexact=email).first()
 
         if user is None:
             raise serializers.ValidationError(
@@ -73,25 +75,27 @@ class LoginSerializer(serializers.Serializer):
             )
 
         # Authenticate user
-        user = authenticate(
+        auth_user = authenticate(
             username=user.username,
             password=password
         )
 
-        if user is None:
+        if auth_user is None:
             raise serializers.ValidationError(
                 "Invalid password."
             )
 
         # Generate JWT Tokens
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(auth_user)
 
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': {
-                'username': user.username,
-                'email': user.email,
+                'username': auth_user.username,
+                'email': auth_user.email,
+                'first_name': auth_user.first_name,
+                'last_name': auth_user.last_name,
             }
         }
 class ContactMessageSerializer(serializers.ModelSerializer):
