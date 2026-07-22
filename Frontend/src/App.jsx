@@ -18,7 +18,7 @@ import { API_BASE_URL } from "./api/axios";
 function App() {
   useEffect(() => {
     // Ping the backend to wake it up from free tier sleep if using cloud backend
-    fetch(API_BASE_URL).catch(() => {});
+    fetch(`${API_BASE_URL}/`).catch(() => {});
   }, []);
   return (
     <div className="bg-slate-950 min-h-screen text-white">

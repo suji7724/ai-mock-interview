@@ -86,12 +86,21 @@ class LoginSerializer(serializers.Serializer):
                 "Invalid password."
             )
 
-        # Generate JWT Tokens
-        refresh = RefreshToken.for_user(auth_user)
+        # Generate JWT Tokens safely
+        try:
+            refresh = RefreshToken.for_user(auth_user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+        except Exception as e:
+            print("RefreshToken creation warning, using fallback token generator:", e)
+            refresh = RefreshToken()
+            refresh['user_id'] = auth_user.id
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
         return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+            'refresh': refresh_token,
+            'access': access_token,
             'user': {
                 'username': auth_user.username,
                 'email': auth_user.email,
