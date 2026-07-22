@@ -7,6 +7,9 @@ from .models import UserProfile
 from .models import ResumeAnalysis
 
 
+from django.db import IntegrityError
+
+
 class RegisterSerializer(serializers.ModelSerializer):
 
     full_name = serializers.CharField(write_only=True)
@@ -25,32 +28,36 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        full_name = validated_data.pop('full_name', '').strip()
+        email = validated_data['email'].strip().lower()
+        password = validated_data['password']
 
-        full_name = validated_data.pop('full_name')
+        if User.objects.filter(username__iexact=email).exists() or User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError({"email": ["An account with this email already exists."]})
 
-        email = validated_data['email']
-
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=validated_data['password']
-        )
-
-        # Store full name
-        user.first_name = full_name
-
-        user.save()
-
-        return user
+        try:
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=password
+            )
+            user.first_name = full_name
+            user.save()
+            return user
+        except IntegrityError:
+            raise serializers.ValidationError({"email": ["An account with this email already exists."]})
+        except Exception as e:
+            raise serializers.ValidationError({"detail": f"Account creation failed: {str(e)}"})
 
     # validate from duplicate email
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        email_clean = value.strip().lower()
+        if User.objects.filter(email__iexact=email_clean).exists() or User.objects.filter(username__iexact=email_clean).exists():
             raise serializers.ValidationError(
-                "Email already exists"
+                "An account with this email already exists."
             )
 
-        return value
+        return email_clean
 
 
 # Login serializer for user login
@@ -62,12 +69,12 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
 
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()
 
         password = data.get('password')
 
-        # Find user using email
-        user = User.objects.filter(email=email).first()
+        # Find user using case-insensitive email match
+        user = User.objects.filter(email__iexact=email).first()
 
         if user is None:
             raise serializers.ValidationError(
@@ -75,25 +82,36 @@ class LoginSerializer(serializers.Serializer):
             )
 
         # Authenticate user
-        user = authenticate(
+        auth_user = authenticate(
             username=user.username,
             password=password
         )
 
-        if user is None:
+        if auth_user is None:
             raise serializers.ValidationError(
                 "Invalid password."
             )
 
-        # Generate JWT Tokens
-        refresh = RefreshToken.for_user(user)
+        # Generate JWT Tokens safely
+        try:
+            refresh = RefreshToken.for_user(auth_user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+        except Exception as e:
+            print("RefreshToken creation warning, using fallback token generator:", e)
+            refresh = RefreshToken()
+            refresh['user_id'] = auth_user.id
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
         return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+            'refresh': refresh_token,
+            'access': access_token,
             'user': {
-                'username': user.username,
-                'email': user.email,
+                'username': auth_user.username,
+                'email': auth_user.email,
+                'first_name': auth_user.first_name,
+                'last_name': auth_user.last_name,
             }
         }
 

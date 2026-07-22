@@ -26,31 +26,61 @@ from .ai_service import analyze_resume_with_ai
 
 
 # REGISTER API
-class RegisterView(generics.CreateAPIView):
+class RegisterView(APIView):
 
-    queryset = User.objects.all()
+    def post(self, request):
+        try:
+            serializer = RegisterSerializer(data=request.data)
 
-    serializer_class = RegisterSerializer
+            if serializer.is_valid():
+                user = serializer.save()
+                return Response(
+                    {
+                        "message": "User registered successfully",
+                        "user": {
+                            "username": user.username,
+                            "email": user.email,
+                            "first_name": user.first_name,
+                        }
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print("Register exception:", e)
+            return Response(
+                {"detail": f"Registration failed: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 # LOGIN API
 class LoginView(APIView):
 
     def post(self, request):
+        try:
+            serializer = LoginSerializer(data=request.data)
 
-        serializer = LoginSerializer(data=request.data)
-
-        if serializer.is_valid():
+            if serializer.is_valid():
+                return Response(
+                    serializer.validated_data,
+                    status=status.HTTP_200_OK
+                )
 
             return Response(
-                serializer.validated_data,
-                status=status.HTTP_200_OK
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
             )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        except Exception as e:
+            print("Login exception:", e)
+            return Response(
+                {"detail": f"Login failed: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 # PROTECTED PROFILE API
