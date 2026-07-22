@@ -47,7 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         except IntegrityError:
             raise serializers.ValidationError({"email": ["An account with this email already exists."]})
         except Exception as e:
-            raise serializers.ValidationError({"detail": f"Account creation failed: {str(e)}"})
+            raise serializers.ValidationError({"detail": f"Could not create account: {str(e)}"})
 
     # validate from duplicate email
     def validate_email(self, value):
@@ -75,6 +75,8 @@ class LoginSerializer(serializers.Serializer):
 
         # Find user using case-insensitive email match
         user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            user = User.objects.filter(username__iexact=email).first()
 
         if user is None:
             raise serializers.ValidationError(
