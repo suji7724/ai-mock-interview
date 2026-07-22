@@ -51,54 +51,62 @@ Rules:
 - One question per line (do not prefix with numbers or bullet points).
 """
 
+    openrouter_free_models = [
+        "google/gemini-2.5-flash:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free",
+        "mistralai/mistral-7b-instruct:free",
+    ]
+
+    gemini_models = [
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-pro",
+    ]
+
     try:
         response_text = None
-        last_exception = None
 
         if gemini_client:
-            try:
-                response = gemini_client.chat.completions.create(
-                    model="gemini-2.0-flash",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    temperature=0.7,
-                    max_tokens=1000,
-                    timeout=7.0,
-                )
-                response_text = response.choices[0].message.content
-                print("Generated Questions (Gemini) Response:", response_text)
-            except Exception as e:
-                print("Gemini Question Generation failed, trying OpenRouter. Error:", e)
-                last_exception = e
+            for model_name in gemini_models:
+                try:
+                    response = gemini_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.7,
+                        max_tokens=1000,
+                        timeout=5.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and len(res_content.strip()) > 10:
+                        response_text = res_content
+                        print(f"Success with Gemini model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"Gemini model {model_name} failed. Error:", e)
 
         if not response_text and openrouter_client:
-            try:
-                response = openrouter_client.chat.completions.create(
-                    model="openrouter/auto",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    temperature=0.7,
-                    max_tokens=1000,
-                    timeout=7.0,
-                )
-                response_text = response.choices[0].message.content
-                print("Generated Questions (OpenRouter) Response:", response_text)
-            except Exception as e:
-                print("OpenRouter Question Generation failed. Error:", e)
-                last_exception = e
+            for model_name in openrouter_free_models:
+                try:
+                    response = openrouter_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.7,
+                        max_tokens=1000,
+                        timeout=5.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and len(res_content.strip()) > 10:
+                        response_text = res_content
+                        print(f"Success with OpenRouter model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"OpenRouter model {model_name} failed. Error:", e)
 
         if not response_text:
-            if last_exception:
-                raise last_exception
-            raise Exception("No active AI service available.")
+            raise Exception("AI services currently busy, using preset question fallback.")
 
         return response_text
 

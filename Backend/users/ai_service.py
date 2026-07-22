@@ -50,58 +50,62 @@ def analyze_resume_with_ai(resume_text):
     }}
     """
 
+    openrouter_free_models = [
+        "google/gemini-2.5-flash:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free",
+        "mistralai/mistral-7b-instruct:free",
+    ]
+
+    gemini_models = [
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-pro",
+    ]
+
     try:
         response_text = None
-        last_exception = None
-
-        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ai_service_debug.log")
 
         if gemini_client:
-            try:
-                response = gemini_client.chat.completions.create(
-                    model="gemini-2.0-flash",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    temperature=0.3,
-                    max_tokens=1500,
-                )
-                response_text = response.choices[0].message.content
-                with open(log_path, "a") as f:
-                    f.write("Gemini call succeeded.\n")
-            except Exception as e:
-                with open(log_path, "a") as f:
-                    f.write(f"Gemini call failed: {str(e)}\n")
-                last_exception = e
+            for model_name in gemini_models:
+                try:
+                    response = gemini_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.3,
+                        max_tokens=1500,
+                        timeout=7.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and "{" in res_content and "}" in res_content:
+                        response_text = res_content
+                        print(f"Success analyzing resume with Gemini model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"Gemini resume model {model_name} error:", e)
 
         if not response_text and openrouter_client:
-            try:
-                response = openrouter_client.chat.completions.create(
-                    model="openrouter/auto",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    temperature=0.3,
-                    max_tokens=1500,
-                )
-                response_text = response.choices[0].message.content
-                with open(log_path, "a") as f:
-                    f.write("OpenRouter call succeeded.\n")
-            except Exception as e:
-                with open(log_path, "a") as f:
-                    f.write(f"OpenRouter call failed: {str(e)}\n")
-                last_exception = e
+            for model_name in openrouter_free_models:
+                try:
+                    response = openrouter_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.3,
+                        max_tokens=1500,
+                        timeout=7.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and "{" in res_content and "}" in res_content:
+                        response_text = res_content
+                        print(f"Success analyzing resume with OpenRouter model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"OpenRouter resume model {model_name} error:", e)
 
         if not response_text:
-            if last_exception:
-                raise last_exception
-            raise Exception("No active AI service available.")
+            raise Exception("AI Resume Analysis service is temporarily rate-limited. Please try again in a few seconds.")
 
         # Parse JSON safely
         start = response_text.find("{")

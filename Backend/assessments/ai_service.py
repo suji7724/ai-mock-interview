@@ -422,35 +422,60 @@ def generate_assessment_questions(role=None, resume_text=None):
 
     response_text = None
 
-    # 1. Try OpenRouter First (or Gemini)
-    if openrouter_client:
-        try:
-            response = openrouter_client.chat.completions.create(
-                model="openrouter/auto",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-                max_tokens=2000,
-                timeout=4.0,
-            )
-            response_text = response.choices[0].message.content
-            print("MCQ Generator (OpenRouter) Raw Response length:", len(response_text) if response_text else 0)
-        except Exception as e:
-            print("OpenRouter MCQ Generation skipped or timed out, using fallback. Error:", e)
+    openrouter_free_models = [
+        "google/gemini-2.5-flash:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free",
+        "mistralai/mistral-7b-instruct:free",
+    ]
 
-    # 2. Try Gemini as fallback if OpenRouter fails
+    gemini_models = [
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-pro",
+    ]
+
+    # 1. Try OpenRouter Free Models
+    if openrouter_client:
+        for model_name in openrouter_free_models:
+            try:
+                print(f"Trying OpenRouter free model: {model_name}")
+                response = openrouter_client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.5,
+                    max_tokens=2000,
+                    timeout=5.0,
+                )
+                res_content = response.choices[0].message.content
+                if res_content and len(res_content.strip()) > 30:
+                    response_text = res_content
+                    print(f"Success generating MCQs with OpenRouter model: {model_name}")
+                    break
+            except Exception as e:
+                print(f"OpenRouter model {model_name} error:", e)
+
+    # 2. Try Gemini Models if OpenRouter didn't yield a response
     if not response_text and gemini_client:
-        try:
-            response = gemini_client.chat.completions.create(
-                model="gemini-2.0-flash",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-                max_tokens=2000,
-                timeout=4.0,
-            )
-            response_text = response.choices[0].message.content
-            print("MCQ Generator (Gemini) Raw Response length:", len(response_text) if response_text else 0)
-        except Exception as e:
-            print("Gemini MCQ Generation skipped or timed out. Error:", e)
+        for model_name in gemini_models:
+            try:
+                print(f"Trying Gemini model: {model_name}")
+                response = gemini_client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.5,
+                    max_tokens=2000,
+                    timeout=5.0,
+                )
+                res_content = response.choices[0].message.content
+                if res_content and len(res_content.strip()) > 30:
+                    response_text = res_content
+                    print(f"Success generating MCQs with Gemini model: {model_name}")
+                    break
+            except Exception as e:
+                print(f"Gemini model {model_name} error:", e)
 
     questions = parse_mcq_json(response_text)
     print(f"Successfully parsed {len(questions)} AI generated MCQ questions.")

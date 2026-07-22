@@ -48,48 +48,62 @@ def generate_ai_feedback(
     }}
     """
 
+    openrouter_free_models = [
+        "google/gemini-2.5-flash:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free",
+        "mistralai/mistral-7b-instruct:free",
+    ]
+
+    gemini_models = [
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-pro",
+    ]
+
     try:
         response_text = None
-        last_exception = None
 
         if gemini_client:
-            try:
-                response = gemini_client.chat.completions.create(
-                    model="gemini-2.0-flash",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                )
-                response_text = response.choices[0].message.content
-                print("Feedback (Gemini) Response:", response_text)
-            except Exception as e:
-                print("Gemini Feedback Generation failed, trying OpenRouter. Error:", e)
-                last_exception = e
+            for model_name in gemini_models:
+                try:
+                    response = gemini_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.5,
+                        max_tokens=1000,
+                        timeout=5.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and "{" in res_content and "}" in res_content:
+                        response_text = res_content
+                        print(f"Success generating feedback with Gemini model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"Gemini model {model_name} feedback error:", e)
 
         if not response_text and openrouter_client:
-            try:
-                response = openrouter_client.chat.completions.create(
-                    model="openrouter/auto",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                )
-                response_text = response.choices[0].message.content
-                print("Feedback (OpenRouter) Response:", response_text)
-            except Exception as e:
-                print("OpenRouter Feedback Generation failed. Error:", e)
-                last_exception = e
+            for model_name in openrouter_free_models:
+                try:
+                    response = openrouter_client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.5,
+                        max_tokens=1000,
+                        timeout=5.0,
+                    )
+                    res_content = response.choices[0].message.content
+                    if res_content and "{" in res_content and "}" in res_content:
+                        response_text = res_content
+                        print(f"Success generating feedback with OpenRouter model {model_name}:", response_text)
+                        break
+                except Exception as e:
+                    print(f"OpenRouter model {model_name} feedback error:", e)
 
         if not response_text:
-            if last_exception:
-                raise last_exception
-            raise Exception("No active AI service available.")
+            raise Exception("AI services busy, using pre-calculated assessment evaluation.")
 
         start = response_text.find("{")
 
