@@ -60,29 +60,8 @@ class InterviewCreateView(generics.CreateAPIView):
             
             is_assessment = "assessment" in str(interview.interview_type).lower()
             if is_assessment:
-                from assessments.ai_service import generate_assessment_questions
-                from assessments.models import Question as MCQQuestion
-                MCQQuestion.objects.filter(interview=interview).delete()
-                Question.objects.filter(interview=interview).delete()
-                mcq_data = generate_assessment_questions()
-                for item in mcq_data:
-                    q_text = item.get("question", "")
-                    q_options = item.get("options", [])
-                    q_correct = item.get("correct_answer", "")
-                    q_cat = item.get("category", "General")
-                    q_diff = item.get("difficulty", "Medium")
-                    if q_correct not in q_options and q_options:
-                        q_options.append(q_correct)
-                    MCQQuestion.objects.create(
-                        question=q_text,
-                        options=q_options,
-                        correct_answer=q_correct,
-                        category=q_cat,
-                        difficulty=q_diff,
-                        interview_type="Assessment Round",
-                        interview=interview,
-                        is_ai_generated=True
-                    )
+                # Assessment MCQs are generated lazily in assessments get_questions view to prevent HTTP timeout
+                pass
             else:
                 resume_text = profile.resume_text if (profile and profile.resume_text) else f"Targeting {role} role."
                 ai_target_count = random.randint(5, 10)
